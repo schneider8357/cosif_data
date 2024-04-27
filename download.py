@@ -24,7 +24,7 @@ def download_csv(ano, mes, extension="zip"):
     resp.raise_for_status()
     print(f"DEBUG {resp.status_code=}")
     print(f"DEBUG {url=}")
-    if extension == "zip":
+    if extension.endswith("zip"):
         z = zipfile.ZipFile(io.BytesIO(resp.content))
         z.extractall("cosif_csvs")
     else:
@@ -33,14 +33,17 @@ def download_csv(ano, mes, extension="zip"):
 
 
 def download_all_years():
-    for ano in range(2000, 2023):
+    for ano in range(2023, 2024):
         for mes in range(1, 13):
             try:
                 download_csv(ano, mes)
             except requests.exceptions.HTTPError:
-                download_csv(ano, mes, "csv")
+                try:
+                    download_csv(ano, mes, "csv")
+                except requests.exceptions.HTTPError:
+                    download_csv(ano, mes, "csv.zip")
 
 
 if __name__ == "__main__":
-    os.makedirs("cosif_csvs")
+    os.makedirs("cosif_csvs", exist_ok=True)
     download_all_years()
